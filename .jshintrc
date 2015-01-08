@@ -11,6 +11,9 @@
     "eqnull": true,
     "browser": true,
     "smarttabs": true,
+
+    "no-floating-decimal": false,
+
     "globals": {
         "jQuery": true,
         "angular": true,
@@ -28,6 +31,7 @@
         "xit": true,
         "spyOn": true,
 
-        "Phaser": true
+        "Phaser": true,
+        "PIXI": true
     }
 }

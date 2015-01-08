@@ -5,7 +5,7 @@ window.createGame = function($app, $data) {
     var width = 500, height = 500;
     var game = new Phaser.Game(width, height, Phaser.CANVAS, 'canvas-wrapper');
 
-    game.state.add('playState', $app.requireService.require('game.states.playState').compile(game));
+    game.state.add('playState', $app.requireService.require('game.states.playState', {game: game}));
     game.state.start('playState');
 
     $app.$scope.$on('$destroy', function() {

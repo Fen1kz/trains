@@ -1,19 +1,42 @@
-angular.module('game', ['ui.bootstrap', 'ui.utils', 'ui.router', 'ngAnimate']);
+angular.module('game').factory('gameService', function($window) {
+    function augmentGame() {
+        // constants
+        this.game.c = {
+            mode: {
+                RAILWAY: 'input.mode.railway'
+            }
+        };
+        // entities
+        this.game.e = {};
+        // this.gamemanagement
+        this.game.gm = {
+            _xy: false
+            ,get xy () {
+                return this._xy = !this._xy;
+            }
+            ,_mark: false
+            ,get mark () {
+                return this._xy = !this._xy;
+            }
+        };
+    }
 
-angular.module('game').config(function ($stateProvider) {
-    $stateProvider
-        .state('game', {
-            url: '/game',
-            templateUrl: 'game/game.html',
-            controller:'gameWrapperController'
-        });
-})
-.controller('gameWrapperController', function($scope, requireService, $injector, $window) {
-        $window.createGame({
-            $scope: $scope,
-            $injector: $injector,
-            requireService: requireService
-        }, null);
-    })
-;
+    return {
+        game: undefined,
+        createGame: function($app, $data) {
+            var game = new Phaser.Game($data.width, $data.height, Phaser.CANVAS, 'canvas-wrapper');
+            this.game = game;
+            augmentGame.call(this);
 
+            $app.$scope.$on('$destroy', function() {
+                game.destroy(); // Clean up the this.gamewhen we leave this scope
+            });
+
+            $window.game = game;
+            $window.gm = game.gm;
+
+            game.state.add('mainState', $app.requireService.require('game.states.mainState', {game: game}));
+            game.state.start('mainState');
+        }
+    };
+});

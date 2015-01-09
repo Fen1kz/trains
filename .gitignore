@@ -7,3 +7,5 @@
 # app
 /dist
 /temp
+#assets
+*.psd

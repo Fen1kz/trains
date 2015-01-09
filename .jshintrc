@@ -11,8 +11,9 @@
     "eqnull": true,
     "browser": true,
     "smarttabs": true,
+    "laxcomma": true,
 
-    "no-floating-decimal": false,
+    "-W008": false, //A leading decimal point can be confused with a dot
 
     "globals": {
         "jQuery": true,

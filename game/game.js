@@ -1,5 +1,5 @@
 angular.module('game').factory('gameService', function($window) {
-    function augmentGame() {
+    function addGameServices() {
         // constants
         this.game.c = {
             mode: {
@@ -26,7 +26,7 @@ angular.module('game').factory('gameService', function($window) {
         createGame: function($app, $data) {
             var game = new Phaser.Game($data.width, $data.height, Phaser.CANVAS, 'canvas-wrapper');
             this.game = game;
-            augmentGame.call(this);
+            addGameServices.call(this);
 
             $app.$scope.$on('$destroy', function() {
                 game.destroy(); // Clean up the this.gamewhen we leave this scope

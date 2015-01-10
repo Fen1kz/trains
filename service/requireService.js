@@ -1,35 +1,37 @@
 angular.module('trains').factory('requireService', function() {
-    var requireService = {
+    function _defineSimple (name, def) {
+        this.files[name] = def;
+        this.$broadcast('loaded.'+name);
+    }
+    function _defineDeps(deps, name, def) {
+        var $requireService = this;
+        var depsLoaded = true;
+        for (var index in deps) {
+            var dep = deps[index];
+            if (this.files[dep] === undefined) {
+                depsLoaded = false;
+                /*jshint -W083 */
+                //console.log('requireService', 'postponed', dep);
+                this.$on('loaded.' + dep, function(event) {
+                    //console.log('requireService', 'loaded', event.name);
+                    $requireService.define(deps, name, def);
+                });
+                break;
+            }
+        }
+        if (depsLoaded) {
+            this.define(name, def);
+        }
+    }
+
+    return {
         events: {},
         files: {},
         define: function (arg0, arg1, arg2) {
             if (arguments.length === 2) {
-                this._define2.apply(this, arguments);
+                _defineSimple.apply(this, arguments);
             } else if (arguments.length === 3) {
-                this._define3.apply(this, arguments);
-            }
-        },
-        _define2: function (name, def) {
-            this.files[name] = def;
-            this.$broadcast('loaded.'+name);
-        },
-        _define3: function (deps, name, def) {
-            var depsLoaded = true;
-            for (var index in deps) {
-                var dep = deps[index];
-                if (this.files[dep] === undefined) {
-                    depsLoaded = false;
-                    /*jshint -W083 */
-                    //console.log('requireService', 'postponed', dep);
-                    this.$on('loaded.' + dep, function(event) {
-                        //console.log('requireService', 'loaded', event.name);
-                        requireService.define(deps, name, def);
-                    });
-                    break;
-                }
-            }
-            if (depsLoaded) {
-                this.define(name, def);
+                _defineDeps.apply(this, arguments);
             }
         },
         require: function (name, data) {
@@ -54,6 +56,4 @@ angular.module('trains').factory('requireService', function() {
             this.events[name].push(handler);
         }
     };
-
-	return requireService;
 });

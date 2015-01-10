@@ -92,6 +92,6 @@ angular.module('trains').run(function($window, requireService) {
     }
 
     function handleCellMouseDown (cell, pointer) {
-
+        //game.enter(game.c.mode.RAILWAY)
     }
 });

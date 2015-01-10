@@ -5,6 +5,7 @@
 /bower_components
 /node_modules
 # app
+/deploy.sh
 /dist
 /temp
 #assets

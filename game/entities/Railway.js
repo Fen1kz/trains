@@ -2,8 +2,7 @@ angular.module('trains').run(function(requireService) {
     requireService.define('game.entities.Railway', function (data) {
         var game = data.game;
 
-        var Railway = function (game) {
-            this.game = game;
+        var Railway = function () {
             this.startDraw = function(cell) {
                 //cell.addRail();
                 var gfx = game.add.graphics();

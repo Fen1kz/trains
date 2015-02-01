@@ -116,6 +116,18 @@ angular.module('trains').run(function($window, requireService) {
                 //    px = x;
                 //}
 
+                game.ui.init(game);
+                console.log(game);
+                var onDown = game.input.onDown.add(function(pointer, event){
+                    game.ui.popoverOnce('test', {
+                        content: 'testtest'
+                        ,x: pointer.x
+                        ,y: pointer.y
+                    });
+                    onDown._signal.halt();
+                    event.stopPropagation();
+                    console.log(event);
+                });
                 window.gm.xy; // jshint ignore:line
             },
             update: function () {

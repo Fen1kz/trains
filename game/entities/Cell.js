@@ -1,10 +1,8 @@
 angular.module('trains').run(function(requireService) {
-    requireService.define(['game.entities.Railway'], 'game.entities.Cell', function (data) {
-        var game = data.game,
+    requireService.define('game.entities.Cell', function (data) {
+        var $game = data.game,
             state = data.state;
 
-        var size = 64;
-        var Railway = requireService.require('game.entities.Railway', data);
         var
         ALPHA_MIN = 0.1,
             //ALPHA_MIN = .5,
@@ -20,8 +18,8 @@ angular.module('trains').run(function(requireService) {
                 points.push(new PIXI.Point(
                     //size * 0.5 + size * Math.cos(angle),
                     //size * 0.5 + size * Math.sin(angle)
-                    Math.round(size * 0.5 * Math.cos(angle)),
-                    Math.round(size * 0.5 * Math.sin(angle))
+                    Math.round($game.e.cells.SIZE * 0.5 * Math.cos(angle)),
+                    Math.round($game.e.cells.SIZE * 0.5 * Math.sin(angle))
                 ));
             }
             var hexPolygon = new PIXI.Polygon(points);
@@ -35,13 +33,13 @@ angular.module('trains').run(function(requireService) {
             //hexMask.drawCircle(0,0,50);
             hexMask.drawShape(hexPolygon);
 
-            var hexMaskImage = game.make.image(0, 0, hexMask.generateTexture(1,1));
+            var hexMaskImage = $game.make.image(0, 0, hexMask.generateTexture(1,1));
 
             var adjustedHexMaskImageBounds = hexMaskImage.getBounds().clone();
-            adjustedHexMaskImageBounds.y = Math.ceil((size - adjustedHexMaskImageBounds.height) * 0.5);
+            adjustedHexMaskImageBounds.y = Math.ceil(($game.e.cells.SIZE - adjustedHexMaskImageBounds.height) * 0.5);
 
-            var hexTexture = game.make.bitmapData(size, size);
-            hexTexture.alphaMask(game.cache.getImage('hex'), hexMaskImage, null, adjustedHexMaskImageBounds);
+            var hexTexture = $game.make.bitmapData($game.e.cells.SIZE, $game.e.cells.SIZE);
+            hexTexture.alphaMask($game.cache.getImage('hex'), hexMaskImage, null, adjustedHexMaskImageBounds);
             //hexTexture.draw(hexMaskImage, 0, size * 0.07); // magic _/ since HexMaskImage is not 64x64
 
             return {
@@ -51,24 +49,36 @@ angular.module('trains').run(function(requireService) {
             };
         }());
 
+        var Railmap = {
+            'nw-se': 0,
+            'ne-sw': 1,
+            '-': 2,
+            'nw':4,
+            'ne':5,
+            'se':6,
+            'sw':7,
+            'nw-ne': 8,
+            'ne-se': 9,
+            'se-sw': 10,
+            'sw-nw': 11
+        };
+
         var Cell = function (cells, X, Y) {
             var $this = this;
 
-            this.game = game;
-            this.SIZE = size;
+            this.game = $game;
             this.cells = cells;
             this.X = X;
             this.Y = Y;
 
-            var yd = (Math.cos(Math.PI/6) * size * 0.5);
-            this.x =  (X * size * 0.25 * 3);
-            this.y =  Y * yd * 2  + (X % 2) * yd;
+            this.x =  (X * cells.SIZE * 0.25 * 3);
+            this.y =  Y * cells.hexAltDistance * 2  + (X % 2) * cells.hexAltDistance;
 
             //this.background = game.make.sprite(x + X*50, y + Y*50, CellData.hexTexture, true);
             //this.overlay = game.make.sprite(x + X*50, y + Y*50, CellData.hexOverlay, true);
-            this.background = game.make.sprite(this.x, this.y, CellData.hexTexture, true);
+            this.background = $game.make.sprite(this.x, this.y, CellData.hexTexture, true);
             cells.groupBackground.add(this.background);
-            this.overlay = game.make.sprite(this.x, this.y, CellData.hexOverlay, true);
+            this.overlay = $game.make.sprite(this.x, this.y, CellData.hexOverlay, true);
             cells.groupOverlay.add(this.overlay);
 
             this.background.anchor.set(0.5);
@@ -84,9 +94,15 @@ angular.module('trains').run(function(requireService) {
             this.overlay.inputEnabled = true;
             this.overlay.hitArea = CellData.hexPolygon;
             this.overlay.input.useHandCursor = true;
+
+            //this.overlay.events.onInputDown.add(function(sprite, pointer){
+            //    var c = this.game.e.cells.getByxy(pointer.x, pointer.y);
+            //    console.log(c.X, c.Y, this.X, this.Y, c.X === this.X && this.Y === c.Y);
+            //}, this);
             this.overlay.events.onInputOver.add(mouseOver, this);
             this.overlay.events.onInputOut.add(mouseOut, this);
             this.overlay.events.onInputDown.add(mouseDown, this);
+
             //$('canvas').on('mouseout', function() {
             //    mouseOut.call($this);
             //})
@@ -96,7 +112,9 @@ angular.module('trains').run(function(requireService) {
             if (this.rail !== undefined) {
                 this.rail.destroy();
             }
-            this.rail = game.add.sprite(this.x, this.y, 'rails', frame);
+            if (typeof frame === 'string') frame = Railmap[frame];
+            if (frame === void 0) frame = Railmap['-'];
+            this.rail = $game.add.sprite(this.x, this.y, 'rails', frame);
             this.rail.anchor.set(0.5);
         };
         Cell.prototype.get = function (x, y) {
@@ -138,7 +156,7 @@ angular.module('trains').run(function(requireService) {
         };
 
         function mouseDown (sprite, pointer) {
-            console.log('mouseDown', sprite, pointer, this);
+            //console.log('mouseDown', sprite, pointer, this);
             this.background.tint = Math.round(Math.random() * (0xFFFFFF));
             //this.addRail(Math.floor(Math.random()*16));
 

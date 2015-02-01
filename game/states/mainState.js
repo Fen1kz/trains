@@ -4,31 +4,71 @@ angular.module('trains').run(function($window, requireService) {
         var cellsX = 16,
             cellsY = 9;
 
-        var cells = {
-            _cells: [],
-            _cellsXY: [],
-            groupBackground: null,
-            groupOverlay: null,
-            cell:function(X, Y) {
-                if (Y === undefined) {
-                    return this._cells[X];
-                } else {
-                    if (this._cellsXY[X] !== undefined && this._cellsXY[X][Y] !== undefined) {
-                        return this._cellsXY[X][Y];
+        game.e.cells = (function(){
+            var size = 64;
+            var hexAltDistance = (Math.cos(Math.PI / 6) * size * 0.5);
+            return {
+                SIZE: size,
+                hexAltDistance: hexAltDistance,
+                _cells: [],
+                _cellsXY: [],
+                groupBackground: null,
+                groupOverlay: null,
+                cell: function (X, Y) {
+                    if (Y === undefined) {
+                        return this._cells[X];
                     } else {
-                        return null;
+                        if (this._cellsXY[X] !== undefined && this._cellsXY[X][Y] !== undefined) {
+                            return this._cellsXY[X][Y];
+                        } else {
+                            return null;
+                        }
                     }
+                },
+                addCell: function (Cell) {
+                    this._cells.push(Cell);
+                    if (!Array.isArray(this._cellsXY[Cell.X])) {
+                        this._cellsXY[Cell.X] = [];
+                    }
+                    this._cellsXY[Cell.X][Cell.Y] = Cell;
+                },
+                getByxy: function (x, y) {
+                    //console.log('----- starting byxy -----')
+                    var rawX = 1 + (x - this.SIZE * .25) / (this.SIZE * .75);
+                    var X = Math.floor(rawX);
+                    var rawY = (X % 2 ? y : y + hexAltDistance) / (hexAltDistance * 2);
+                    var Y = Math.floor(rawY);
+
+                    var relX = (rawX % 1);
+                    var relY = (rawY % 1);
+                    //console.log('raw: ', rawX.toFixed(2), rawY.toFixed(2));
+                    //console.log('relative: ', relX.toFixed(2), relY.toFixed(2));
+                    if (relX < 0.33) {
+                        var coef = Math.tan(Math.PI / 2 - Math.PI / 6);
+                        //debugCircle(coef * rawX, rawY);
+                        //console.log('risk', +relX.toFixed(2), +relY.toFixed(2), properY);
+                        if (relY < .5) {
+                            //console.log('test for ', properY);
+                            if (.5 - coef * relX > relY) {
+                                X--;
+                                if (X % 2) Y--;
+                                //console.log('CORRECTION');
+                            }
+                        } else {
+                            //console.log('test for ', properY);
+                            if (coef * relX < relY - .5) {
+                                X--;
+                                if (!(X % 2)) Y++;
+                                //console.log('CORRECTION');
+                            }
+                        }
+                    }
+
+                    return this._cellsXY[X][Y];
+                    //return {X: X, Y: )};
                 }
-            },
-            addCell:function(Cell) {
-                this._cells.push(Cell);
-                if (!Array.isArray(this._cellsXY[Cell.X])) {
-                    this._cellsXY[Cell.X] = [];
-                }
-                this._cellsXY[Cell.X][Cell.Y] = Cell;
-            }
-        };
-        game.e.cells = cells;
+            };
+        })();
 
         return {
             preload: function () {
@@ -46,8 +86,8 @@ angular.module('trains').run(function($window, requireService) {
                     state: this
                 });
 
-                cells.groupBackground = game.add.group();
-                cells.groupOverlay = game.add.group();
+                game.e.cells.groupBackground = game.add.group();
+                game.e.cells.groupOverlay = game.add.group();
                 for (var X = 0; X <= cellsX; ++X) {
                     for (var Y = 0; Y <= cellsY; ++Y) {
                         game.e.cells.addCell(new Cell(game.e.cells, X, Y));
@@ -55,6 +95,26 @@ angular.module('trains').run(function($window, requireService) {
                 }
 
                 createEvents.call(this);
+
+                //var px = 0
+                //var gfx = game.add.graphics();
+                //gfx.lineStyle(3, 0x009900)
+                //
+                //this.SIZE = game.e.cells.SIZE;
+                //var yd = (Math.cos(Math.PI/6) * this.SIZE * 0.5);
+                //
+                //for(var i = 10; i >= 0; --i) {
+                //    var x = - this.SIZE * .5 + i * this.SIZE * 0.75;
+                //    gfx.moveTo(x, 0);
+                //    gfx.lineTo(x, 600);
+                //    for(var j = 10; j >= 0; --j) {
+                //        var y = j * yd * 2;
+                //        if (!(i % 2)) y -= yd;
+                //        gfx.moveTo(px, y);
+                //        gfx.lineTo(x, y);
+                //    }
+                //    px = x;
+                //}
 
                 window.gm.xy; // jshint ignore:line
             },
@@ -74,7 +134,7 @@ angular.module('trains').run(function($window, requireService) {
 
                 if ($window.gm._xy) {
                     game.e.cells._cells.forEach(function(cell) {
-                        game.debug.text((cell.X + ':' + cell.Y).toString(), cell.x - cell.SIZE *.3, cell.y, '#000');
+                        game.debug.text((cell.X + ':' + cell.Y).toString(), cell.x - game.e.cells.SIZE *.3, cell.y, '#000');
                     });
                 }
             }
@@ -82,9 +142,7 @@ angular.module('trains').run(function($window, requireService) {
     });
 
     function createEvents () {
-        if (this.game.events === undefined) {
-            this.game.events = {};
-        }
+        this.game.events = {};
         this.game.events.onCellMouseDown = new Phaser.Signal();
         this.game.events.onCellMouseOver = new Phaser.Signal();
 
@@ -92,6 +150,6 @@ angular.module('trains').run(function($window, requireService) {
     }
 
     function handleCellMouseDown (cell, pointer) {
-        //game.enter(game.c.mode.RAILWAY)
+        this.game.selectionMode.railway.start(cell, pointer);
     }
 });

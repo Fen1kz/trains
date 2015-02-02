@@ -92,9 +92,7 @@ module.exports = function (grunt) {
       }
     },
     less: {
-      production: {
-        options: {
-        },
+      main: {
         files: {
           'temp/app.css': 'app.less'
         }
@@ -111,12 +109,20 @@ module.exports = function (grunt) {
       }
     },
     copy: {
+      temp: {
+        files: [
+          {src: ['bower_components/font-awesome/fonts/**'], dest: 'temp/', filter:'isFile'}
+        ]
+      },
       main: {
         files: [
           {src: ['img/**'], dest: 'dist/'},
           {src: ['bower_components/font-awesome/fonts/**'], dest: 'dist/',filter:'isFile',expand:true},
           {src: ['bower_components/bootstrap/fonts/**'], dest: 'dist/',filter:'isFile',expand:true},
-          {src: ['game/assets/**'], dest: 'dist/',filter:'isFile',expand:true}
+          {src: [
+              'game/assets/**/*.png',
+              'game/assets/**/*.jpg'
+          ], dest: 'dist/',filter:'isFile', expand:true}
           //{src: ['bower_components/angular-ui-utils/ui-utils-ieshiv.min.js'], dest: 'dist/'},
           //{src: ['bower_components/select2/*.png','bower_components/select2/*.gif'], dest:'dist/css/',flatten:true,expand:true},
           //{src: ['bower_components/angular-mocks/angular-mocks.js'], dest: 'dist/'}
@@ -221,9 +227,10 @@ module.exports = function (grunt) {
     }
   });
 
-  grunt.registerTask('build',['jshint','clean:before','less','dom_munger','ngtemplates','cssmin','concat','ngAnnotate','uglify','copy','htmlmin','clean:after']);
+  grunt.registerTask('build',['jshint','clean:before','less','dom_munger','ngtemplates','cssmin','concat','ngAnnotate','uglify','copy:main','htmlmin','clean:after']);
   grunt.registerTask('serve', ['dom_munger:read','jshint','connect', 'watch']);
   grunt.registerTask('test',['dom_munger:read','karma:all_tests']);
+  grunt.registerTask('temp', ['less','copy:temp']);
 
   grunt.event.on('watch', function(action, filepath) {
     //https://github.com/gruntjs/grunt-contrib-watch/issues/156

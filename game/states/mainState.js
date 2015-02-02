@@ -117,32 +117,31 @@ angular.module('trains').run(function($window, requireService) {
                 //}
 
                 game.ui.init(game);
-                console.log(game);
-                var onDown = game.input.onDown.add(function(pointer, event){
-                    game.ui.popoverOnce('test', {
-                        content: 'testtest'
-                        ,x: pointer.x
-                        ,y: pointer.y
-                    });
-                    onDown._signal.halt();
-                    event.stopPropagation();
-                    console.log(event);
-                });
-                window.gm.xy; // jshint ignore:line
+                //console.log(game);
+                //var onDown = game.input.onDown.add(function(pointer, event){
+                //    game.ui.confirmOnce({
+                //        x: pointer.x
+                //        ,y: pointer.y
+                //    });
+                //    onDown._signal.halt();
+                //    event.stopPropagation();
+                //    console.log(event);
+                //});
+                //window.gm.xy; // jshint ignore:line
             },
             update: function () {
                 //console.log('update');
             },
             render: function () {
-                game.e.cells.cell(5, 5).background.tint = Math.round(Math.random() * (0xFFFFFF));
+                //game.e.cells.cell(5, 5).background.tint = Math.round(Math.random() * (0xFFFFFF));
                 //console.log(Math.random * (0xFFFFFF));
                 //console.log('render');
                 //game.debug.text('render',200,200)
-                game.e.cells.cell(5, 5).background.tint = 0xFF0000;
+                //game.e.cells.cell(5, 5).background.tint = 0xFF0000;
 
 
-                game.debug.spriteBounds(game.e.cells.cell(4, 4).background, "#F00", false);
-                game.debug.spriteInfo(game.e.cells.cell(4, 4).background, 200,200, "#F00");
+                //game.debug.spriteBounds(game.e.cells.cell(4, 4).background, "#F00", false);
+                //game.debug.spriteInfo(game.e.cells.cell(4, 4).background, 200,200, "#F00");
 
                 if ($window.gm._xy) {
                     game.e.cells._cells.forEach(function(cell) {

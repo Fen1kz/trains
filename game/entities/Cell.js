@@ -99,13 +99,14 @@ angular.module('trains').run(function(requireService) {
             //    var c = this.game.e.cells.getByxy(pointer.x, pointer.y);
             //    console.log(c.X, c.Y, this.X, this.Y, c.X === this.X && this.Y === c.Y);
             //}, this);
+            //this.overlay.events.onInputDown.add(function(sprite, pointer){
+            //    console.log(this.getNear());
+            //}, this);
             this.overlay.events.onInputOver.add(mouseOver, this);
             this.overlay.events.onInputOut.add(mouseOut, this);
             this.overlay.events.onInputDown.add(mouseDown, this);
-
-            //$('canvas').on('mouseout', function() {
-            //    mouseOut.call($this);
-            //})
+            $game.input.onUp.add(mouseOut, this);
+            $game.onBlur.add(mouseOut, this);
         };
 
         Cell.prototype.addRail = function (frame) {
@@ -139,7 +140,7 @@ angular.module('trains').run(function(requireService) {
             return this.get(-1, (this.X % 2) ? +1 : 0);
         };
 
-        Cell.prototype.getNear = function () {
+        Cell.prototype.getNearAll = function () {
             return {
                 'nw': this.getNW(),
                 'n' : this.getN(),
@@ -148,16 +149,55 @@ angular.module('trains').run(function(requireService) {
                 's' : this.getS(),
                 'sw': this.getSW()
             };
-            //game.debug.renderSpriteBounds(spriteObjectToHighlight);
         };
-
+        Cell.prototype.getNear = function () {
+            var r = {};
+            this.getNW() ? r['nw'] = this.getNW() : null;
+            this.getN()  ? r['n' ] = this.getN()  : null;
+            this.getNE() ? r['ne'] = this.getNE() : null;
+            this.getSE() ? r['se'] = this.getSE() : null;
+            this.getS()  ? r['s' ] = this.getS()  : null;
+            this.getSW() ? r['sw'] = this.getSW() : null;
+            return r;
+        };
+        Cell.prototype.getNearArray = function () {
+            var r = [];
+            this.getNW() ? r.push(this.getNW()) : null;
+            this.getN()  ? r.push(this.getN() ) : null;
+            this.getNE() ? r.push(this.getNE()) : null;
+            this.getSE() ? r.push(this.getSE()) : null;
+            this.getS()  ? r.push(this.getS() ) : null;
+            this.getSW() ? r.push(this.getSW()) : null;
+            return r;
+        };
+        Cell.prototype.dX = function (cell) {
+            return this.X - cell.X;
+        };
+        Cell.prototype.dY = function (cell) {
+            return this.Y - cell.Y;
+        };
+        Cell.prototype.sameCell = function (cell) {
+            return this.X === cell.X && this.Y === cell.Y;
+        };
+        Cell.prototype.nearCell = function (cell) {
+            return this.getNearArray().indexOf(cell) >= 0;
+        };
+        Cell.prototype.dirToCell = function (cell) {
+            var near = this.getNear();
+            for (var dir in near) {
+                if (cell.sameCell(near[dir])) {
+                    return dir;
+                }
+            }
+            return null;
+        };
         Cell.prototype.mark = function () {
             //game.debug.renderSpriteBounds(spriteObjectToHighlight);
         };
 
         function mouseDown (sprite, pointer) {
             //console.log('mouseDown', sprite, pointer, this);
-            this.background.tint = Math.round(Math.random() * (0xFFFFFF));
+            //this.background.tint = Math.round(Math.random() * (0xFFFFFF));
             //this.addRail(Math.floor(Math.random()*16));
 
             this.game.events.onCellMouseDown.dispatch(this, pointer);

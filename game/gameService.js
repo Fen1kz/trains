@@ -24,6 +24,9 @@ angular.module('game').factory('gameService', function($window, UIService, requi
                     return this._xy = !this._xy;
                 }
             };
+            window.drawCircle = function(x,y,r) {
+                $game.add.graphics().beginFill(0xFF0000).drawCircle(x,y,r || 5);
+            };
             //$game.selection = (function(){
             //    return {
             //        _selection: {},

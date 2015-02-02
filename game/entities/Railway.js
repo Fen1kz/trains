@@ -3,31 +3,65 @@ angular.module('trains').run(function(requireService) {
         var game = data.game;
 
         var Railway = function () {
+            this.cells = {};
+            this.path = [];
+            this.previousValidCell = null;
             this.startDraw = function(cell) {
-                //cell.addRail();
+                var $this = this;
+                var line = {
+                    width: game.e.cells.SIZE / 5
+                    ,color: {
+                        good: 0x009900
+                        ,bad: 0x990000
+                    }
+                    ,alpha: 0.5
+                };
                 var gfx = game.add.graphics();
-                //gfx.lineStyle(game.e.cells.SIZE / 5, 0x009900, 0.5);
-                gfx.lineStyle(10, 0x009900, 0.5);
+                gfx.beginFill(0x009900, 0.5);
+                gfx.drawCircle(cell.x, cell.y, game.e.cells.SIZE / 2);
+                gfx.endFill();
                 gfx.moveTo(cell.x, cell.y);
-                //debugger
-                //game.input.onUp
+                gfx.lineStyle(line.width, line.color.good, line.alpha);
+
+                var previousValidCell = cell;
+                this.cells[cell.X+':'+cell.Y] = true;
+                this.path.push(cell);
+
                 var moveIndex = game.input.addMoveCallback(function(pointer, x, y) {
-                    var previousCell = cell;
-                    cell = game.e.cells.getByxy(x, y);
-                    if (previousCell.X !== cell.X || previousCell.Y !== cell.Y) {
-                        //console.log('cell', cell.X, cell.Y, previousCell.X, previousCell.Y);
-                        if (Math.abs(previousCell.X - cell.X) > 1 || Math.abs(previousCell.Y - cell.Y) > 1) {
-                            game.input.onUp.dispatch(pointer);
-                            return;
-                        }
-                        gfx.lineTo(cell.x, cell.y);
+                    var currentCell = game.e.cells.getByxy(x, y);
+                    var dir = previousValidCell.dirToCell(currentCell);
+                    if (previousValidCell.nearCell(currentCell)
+                        && dir !== 'n' && dir !== 's'
+                        && this.cells[currentCell.X+':'+currentCell.Y] === void 0
+                    ) {
+                        previousValidCell = currentCell;
+                        this.cells[currentCell.X+':'+currentCell.Y] = true;
+                        this.path.push(currentCell);
+
+                        gfx.lineStyle(line.width, line.color.good, line.alpha);
+                        gfx.lineTo(currentCell.x, currentCell.y);
                     }
                 }, this);
                 game.input.onUp.addOnce(function(pointer) {
-                    //console.log('enough', moveIndex);
-
                     game.input.deleteMoveCallback(moveIndex);
-                });
+                    game.ui.confirmOnce({
+                        x: previousValidCell.x
+                        ,y: previousValidCell.y
+                        ,text: 'Build railway?'
+                    }, (function() {
+                        //gfx.destroy();
+                        var prevCell;
+                        var cell = this.path[0];
+                        cell.addRail('-');
+                        for (var i = 1; i < this.path.length; i++) {
+                            prevCell = this.path[i-1];
+                            cell = this.path[i];
+                            //console.log()cell.dirToCell(prevCell)
+                        }
+                    }).bind(this), (function() {
+                        gfx.destroy();
+                    }).bind(this));
+                }, this);
             };
             //game.mode.start(game.c.RAILWAY)
         };

@@ -104,7 +104,7 @@ angular.module('trains').run(function(requireService) {
                             }
                             var frame = game.RAILMAP.frameByDirs(cell.dirToCell(prevCell), cell.dirToCell(nextCell));
                             cell.addRail(frame);
-                            console.log(cell.dirToCell(prevCell), cell.dirToCell(nextCell), frame);
+                            //console.log(cell.dirToCell(prevCell), cell.dirToCell(nextCell), frame);
                         }
                         gfxGroup.destroy();
                     }.bind(this), function() {

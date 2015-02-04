@@ -42,13 +42,18 @@
   <script src="game/states/mainState.js"></script>
   <!-- Add New Component JS Above -->
 
-  <div>
-    <div id="content" class="container">
-      <div class="row">
-        <div ui-view>
-        </div>
+  <div class="container-fluid height-inherit">
+      <div class="row height-inherit">
+          <div class="column left col-lg-3 col-md-2 col-sm-1 hidden-xs height-inherit">
+              <p>Left Column</p>
+          </div>
+          <div class="column center col-lg-6 col-md-8 col-sm-10 col-xs-12 height-inherit">
+              <div ui-view></div>
+          </div>
+          <div class="column right col-lg-3 col-md-2 col-sm-1 hidden-xs height-inherit">
+              <p>Right Column</p>
+          </div>
       </div>
-    </div>
   </div>
 
 </body>

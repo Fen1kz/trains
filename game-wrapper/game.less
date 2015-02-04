@@ -1,8 +1,23 @@
 /* Component LESS */
-/* Add Component LESS Above */
+@color1: #D9CEB2;
+@color2: #948C75;
+@color3: #D5DED9;
+@color4: #7A6A53;
+@color5: #99B2B7;
 
-canvas {
-    border: 1px solid #000;
+/* Add Component LESS Above */
+html {
+    height: 100%;
+}
+
+body,
+.height-inherit {
+    height: inherit;
+}
+
+.column.left,
+.column.right {
+    background: @color3;
 }
 
 #canvas-wrapper {
@@ -10,4 +25,8 @@ canvas {
     }
     #ui {
         position: relative;
+    }
+    canvas {
+        border: 1px solid #000;
+        margin: 0 auto;
     }

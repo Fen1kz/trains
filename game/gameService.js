@@ -1,11 +1,14 @@
 angular.module('game').factory('gameService', function($window, UIService, requireService) {
     return {
         createGame: function($app, $data) {
+            console.log($data);
             this.game = new Phaser.Game($data.width, $data.height, Phaser.CANVAS, 'canvas-wrapper');
             var $game = this.game;
             // constants
             $game.c = {
-                CELL_SIZE: 64
+                WORLD_WIDTH: $data.width
+                ,WORLD_HEIGHT: $data.height
+                ,CELL_SIZE: 64
                 ,mode: {
                     RAILWAY: 'input.mode.railway'
                 }

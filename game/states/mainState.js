@@ -1,12 +1,14 @@
 angular.module('trains').run(function($window, requireService) {
     requireService.define(['game.entities.Cell'], 'game.states.mainState', function (data) {
         var game = data.game;
-        var cellsX = 16,
-            cellsY = 9;
 
+        var hexAltDistance = (Math.cos(Math.PI / 6) * game.c.CELL_SIZE * 0.5);
+
+        var cellsX = Math.ceil(game.c.WORLD_WIDTH / (game.c.CELL_SIZE / 2 * 1.5)),
+            cellsY = Math.ceil(game.c.WORLD_HEIGHT / (hexAltDistance * 2));
+        console.log(cellsX, cellsY);
         game.e.cells = (function(){
-            var size = 64;
-            var hexAltDistance = (Math.cos(Math.PI / 6) * size * 0.5);
+            var hexAltDistance = (Math.cos(Math.PI / 6) * game.c.CELL_SIZE * 0.5);
             return {
                 hexAltDistance: hexAltDistance,
                 _cells: [],
@@ -69,6 +71,7 @@ angular.module('trains').run(function($window, requireService) {
             };
         })();
 
+        var quickdebug;
         return {
             preload: function () {
                 console.log('preload ps');
@@ -92,40 +95,35 @@ angular.module('trains').run(function($window, requireService) {
                         game.e.cells.addCell(new Cell(game.e.cells, X, Y));
                     }
                 }
-
                 createEvents.call(this);
-
-                //var px = 0
-                //var gfx = game.add.graphics();
-                //gfx.lineStyle(3, 0x009900)
-                //
-                //var yd = (Math.cos(Math.PI/6) * game.c.CELL_SIZE * 0.5);
-                //
-                //for(var i = 10; i >= 0; --i) {
-                //    var x = - game.c.CELL_SIZE * .5 + i * game.c.CELL_SIZE * 0.75;
-                //    gfx.moveTo(x, 0);
-                //    gfx.lineTo(x, 600);
-                //    for(var j = 10; j >= 0; --j) {
-                //        var y = j * yd * 2;
-                //        if (!(i % 2)) y -= yd;
-                //        gfx.moveTo(px, y);
-                //        gfx.lineTo(x, y);
-                //    }
-                //    px = x;
-                //}
-
                 game.ui.init(game);
-                //console.log(game);
-                //var onDown = game.input.onDown.add(function(pointer, event){
-                //    game.ui.confirmOnce({
-                //        x: pointer.x
-                //        ,y: pointer.y
-                //    });
-                //    onDown._signal.halt();
-                //    event.stopPropagation();
-                //    console.log(event);
-                //});
-                //window.gm.xy; // jshint ignore:line
+
+                game.world.setBounds(0, 0, game.c.WORLD_WIDTH, game.c.WORLD_HEIGHT);
+                game.camera.x = game.world._width / 2;
+                game.camera.y = game.world._height / 2;
+                game.input.onDown.add(function(pointer) {
+                    console.log(game.camera);
+                    var start = Phaser.Point.parse(pointer, 'worldX', 'worldY');
+                    var move = game.input.addMoveCallback(function(pointer, x, y) {
+                        game.camera.x = start.x - x;
+                        game.camera.y = start.y - y;
+                    });
+                    game.input.onUp.addOnce(function(pointer) {
+                        //console.log('onup');
+                        game.input.deleteMoveCallback(move);
+                    });
+                });
+                window.resizeGame();
+
+                quickdebug = game.add.group();
+                window.qd = quickdebug;
+                game.e.cells._cells.forEach(function(cell) {
+                    game.add.text(cell.x - game.c.CELL_SIZE *.3, cell.y
+                        ,(cell.X + ':' + cell.Y).toString()
+                        ,{font: 'normal 10px Arial'}
+                        , quickdebug
+                    );
+                });
             },
             update: function () {
                 //console.log('update');
@@ -140,12 +138,7 @@ angular.module('trains').run(function($window, requireService) {
 
                 //game.debug.spriteBounds(game.e.cells.cell(4, 4).background, "#F00", false);
                 //game.debug.spriteInfo(game.e.cells.cell(4, 4).background, 200,200, "#F00");
-
-                if ($window.gm._xy) {
-                    game.e.cells._cells.forEach(function(cell) {
-                        game.debug.text((cell.X + ':' + cell.Y).toString(), cell.x - game.c.CELL_SIZE *.3, cell.y, '#000');
-                    });
-                }
+                quickdebug.visible = !$window.gm._xy;
             }
         };
     });

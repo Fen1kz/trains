@@ -89,7 +89,7 @@ angular.module('trains').run(function(requireService) {
             //}, this);
             this.overlay.events.onInputOver.add(mouseOver, this);
             this.overlay.events.onInputOut.add(mouseOut, this);
-            this.overlay.events.onInputDown.add(mouseDown, this);
+            //this.overlay.events.onInputDown.add(mouseDown, this);
             this.game.input.onUp.add(mouseOut, this);
             this.game.onBlur.add(mouseOut, this);
         };

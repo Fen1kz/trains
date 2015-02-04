@@ -9,7 +9,7 @@ angular.module('game').config(function ($stateProvider) {
         });
 })
 .constant('GAME', {
-    WIDTH: 600, HEIGHT: 600
+    WIDTH: 1600, HEIGHT: 1600
 })
 .controller('gameWrapperController', function($scope, $injector, GAME, requireService, gameService) {
     $scope.game = gameService.createGame({

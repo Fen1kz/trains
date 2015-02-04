@@ -1,9 +1,9 @@
 angular.module('game').factory('gameService', function($window, UIService, requireService) {
     return {
         createGame: function($app, $data, createCallback) {
-            this.game = new Phaser.Game($data.width, $data.height, Phaser.CANVAS, 'canvas-wrapper');
-            //@TODO requireService set game
-            var $game = this.game;
+            var $game = new Phaser.Game($data.width, $data.height, Phaser.CANVAS, 'canvas-wrapper');
+            this.game = $game;
+            requireService.setData({game: $game});
             // constants
             $game.c = {
                 WORLD_WIDTH: $data.width
@@ -25,18 +25,6 @@ angular.module('game').factory('gameService', function($window, UIService, requi
                 ,_mark: false
                 ,get mark () {
                     return this._xy = !this._xy;
-                }
-            };
-            var Railway = requireService.require('game.entities.Railway', {game: $game});
-            $game.selectionMode = {
-                railway: {
-                    start: function(cell, pointer) {
-                        //$game.selection.start('railway')
-                        //    .set(new Railway())
-                        new Railway().startDraw(cell);
-                        //$game.input.onUp.addOnce(function(pointer){
-                        //});
-                    }
                 }
             };
 

@@ -25,6 +25,7 @@ angular.module('trains').factory('requireService', function() {
     }
 
     return {
+        data: {},
         events: {},
         files: {},
         define: function (arg0, arg1, arg2) {
@@ -38,7 +39,7 @@ angular.module('trains').factory('requireService', function() {
             if (this.files[name] === undefined) {
                 throw new Error("Required target '"+name+"' has not loaded");
             }
-            return this.files[name](data);
+            return this.files[name](angular.extend({}, this.data, data));
         },
         $broadcast: function(name) {
             if (this.events[name]) {
@@ -54,6 +55,9 @@ angular.module('trains').factory('requireService', function() {
                 this.events[name] = [];
             }
             this.events[name].push(handler);
+        },
+        setData: function(data) {
+            angular.extend(this.data, data);
         }
     };
 });

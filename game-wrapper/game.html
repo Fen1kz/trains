@@ -1,8 +1,17 @@
-here's da gaem
-<div id="canvas-wrapper">
+<div class="row">here's da gaem</div>
+<div class="row"><div id="canvas-wrapper">
     <div id="ui"></div>
+</div></div>
+<div class="row" ng-controller="UIController">
+    <div class="btn-group btn-group-lg col-xs-offset-2 margin-top-05" role="group">
+        <button ng-repeat="button in buttons"
+            type="button"
+            class="btn btn-default"
+            ng-model="controllerModel.instrument"
+            btn-radio="button.model">
+            {{button.name}}
+        </button>
+    </div>
 </div>
-<div class="btn-group">
-    <button type="button" class="btn btn-default btn-lg" data-toggle="button">Pan</button>
-    <button type="button" class="btn btn-default btn-lg" data-toggle="button">Rails</button>
-</div>
+
+data-toggle="button"

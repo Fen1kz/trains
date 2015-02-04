@@ -1,6 +1,7 @@
 angular.module('trains').run(function($window, requireService) {
     requireService.define(['game.entities.Cell'], 'game.states.mainState', function (data) {
         var game = data.game;
+        var createCallback = data.createCallback;
 
         var hexAltDistance = (Math.cos(Math.PI / 6) * game.c.CELL_SIZE * 0.5);
 
@@ -82,6 +83,24 @@ angular.module('trains').run(function($window, requireService) {
             create: function () {
                 console.log('create ps');
                 game.stage.backgroundColor = 0xffffff;
+                game.ui.init(game);
+                createEvents.call(this);
+
+                game.world.setBounds(0, 0, game.c.WORLD_WIDTH, game.c.WORLD_HEIGHT);
+                game.camera.x = game.world._width / 2;
+                game.camera.y = game.world._height / 2;
+                game.input.onDown.add(function(pointer) {
+                    var start = Phaser.Point.parse(pointer, 'worldX', 'worldY');
+                    var move = game.input.addMoveCallback(function(pointer, x, y) {
+                        game.camera.x = start.x - x;
+                        game.camera.y = start.y - y;
+                    });
+                    game.input.onUp.addOnce(function(pointer) {
+                        //console.log('onup');
+                        game.input.deleteMoveCallback(move);
+                    });
+                });
+                createCallback.call(this);
 
                 var Cell = requireService.require('game.entities.Cell', {
                     game: game,
@@ -95,28 +114,8 @@ angular.module('trains').run(function($window, requireService) {
                         game.e.cells.addCell(new Cell(game.e.cells, X, Y));
                     }
                 }
-                createEvents.call(this);
-                game.ui.init(game);
-
-                game.world.setBounds(0, 0, game.c.WORLD_WIDTH, game.c.WORLD_HEIGHT);
-                game.camera.x = game.world._width / 2;
-                game.camera.y = game.world._height / 2;
-                game.input.onDown.add(function(pointer) {
-                    console.log(game.camera);
-                    var start = Phaser.Point.parse(pointer, 'worldX', 'worldY');
-                    var move = game.input.addMoveCallback(function(pointer, x, y) {
-                        game.camera.x = start.x - x;
-                        game.camera.y = start.y - y;
-                    });
-                    game.input.onUp.addOnce(function(pointer) {
-                        //console.log('onup');
-                        game.input.deleteMoveCallback(move);
-                    });
-                });
-                window.resizeGame();
 
                 quickdebug = game.add.group();
-                window.qd = quickdebug;
                 game.e.cells._cells.forEach(function(cell) {
                     game.add.text(cell.x - game.c.CELL_SIZE *.3, cell.y
                         ,(cell.X + ':' + cell.Y).toString()

@@ -8,75 +8,50 @@ angular.module('game').config(function ($stateProvider) {
             controller:'gameWrapperController'
         });
 })
-.controller('gameWrapperController', function($scope, $injector, requireService, gameService, $modal) {
-        var GAME_SIZE = {
-            WIDTH: 600, HEIGHT: 600
+.constant('GAME', {
+    WIDTH: 600, HEIGHT: 600
+})
+.controller('gameWrapperController', function($scope, $injector, GAME, requireService, gameService) {
+    $scope.game = gameService.createGame({
+        $scope: $scope,
+        $injector: $injector,
+        requireService: requireService
+    }, {
+        width: GAME.WIDTH, height: GAME.HEIGHT
+    }, function createCallback() {
+        resizeGame();
+    });
+
+    window.drawCircle = function(x,y,r) {
+        $scope.game.add.graphics().beginFill(0xFF0000).drawCircle(x,y,r || 5);
+    };
+    $(window).resize(function() { resizeGame(); } );
+    function resizeGame () {
+        var size = {
+            width: $('#canvas-wrapper').width(),
+            height: $(window).height() - 100
         };
-        var game = gameService.createGame({
-            $scope: $scope,
-            $injector: $injector,
-            requireService: requireService
-        }, {
-            width: GAME_SIZE.WIDTH, height: GAME_SIZE.WIDTH
-        });
+        size.width = size.width > GAME.WIDTH ? GAME.WIDTH : size.width;
+        size.height = size.height > GAME.WIDTH ? GAME.WIDTH : size.height;
 
-        $(window).resize(function() { window.resizeGame(); } );
-        window.resizeGame = function () {
-            var size = {
-                width: $('#canvas-wrapper').width(),
-                height: $(window).height() - 100
-            };
-            size.width = size.width > GAME_SIZE.WIDTH ? GAME_SIZE.WIDTH : size.width;
-            size.height = size.height > GAME_SIZE.WIDTH ? GAME_SIZE.WIDTH : size.height;
-
-
-            game.width = size.width;
-            game.height = size.height;
-            game.canvas.width = size.width;
-            game.canvas.height = size.height;
-            //game.world.setBounds(0, 0, size.width, size.height);
-            game.scale.width = size.width;
-            game.scale.height = size.height;
-            game.camera.setSize(size.width, size.height);
-            //game.camera.setBoundsToWorld();
-            // resize debug offscreen canvas
-            if (game.debug.sprite) {
-                game.debug.sprite.removeStageReference();
-            }
-            game.debug.boot();
-
-            //(<any>this.game.renderer).resize(size.width, size.height);
-
-            // Tell ScaleManager that we have changed sizes
-            game.scale.setSize();
+        $scope.game.width = size.width;
+        $scope.game.height = size.height;
+        $scope.game.canvas.width = size.width;
+        $scope.game.canvas.height = size.height;
+        //game.world.setBounds(0, 0, size.width, size.height);
+        $scope.game.scale.width = size.width;
+        $scope.game.scale.height = size.height;
+        $scope.game.camera.setSize(size.width, size.height);
+        //game.camera.setBoundsToWorld();
+        // resize debug offscreen canvas
+        if ( $scope.game.debug.sprite) {
+            $scope.game.debug.sprite.removeStageReference();
         }
+        $scope.game.debug.boot();
 
-        //var $canvas = $(game.canvas);
-        //console.log(game, game.canvas);
+        //(<any>this.game.renderer).resize(size.width, size.height);
 
-        //$canvas.click(function() {
-        //    $('#ui').popover('destroy');
-        //    $('#ui')
-        //        .popover({
-        //            trigger: 'manual'
-        //            //,container: 'body'
-        //            ,viewport: '#canvas-wrapper'
-        //            , content: "asdfasdfsadf"
-        //        })
-        //        .popover('show');
-        //});
-
-
-        //$modal.open({
-        //    template: "hey hey"
-        //})
-
-        //$('<div>')
-        //    .css('left', 20)
-        //    .css('top', 20)
-        //    .attr('class', 'confirmbox')
-        //    .text('asdfasdf')
-        //    .appendTo('#canvas-wrapper');
-    })
-;
-
+        // Tell ScaleManager that we have changed sizes
+        $scope.game.scale.setSize();
+    }
+});

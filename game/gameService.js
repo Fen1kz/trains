@@ -1,8 +1,8 @@
 angular.module('game').factory('gameService', function($window, UIService, requireService) {
     return {
-        createGame: function($app, $data) {
-            console.log($data);
+        createGame: function($app, $data, createCallback) {
             this.game = new Phaser.Game($data.width, $data.height, Phaser.CANVAS, 'canvas-wrapper');
+            //@TODO requireService set game
             var $game = this.game;
             // constants
             $game.c = {
@@ -27,60 +27,6 @@ angular.module('game').factory('gameService', function($window, UIService, requi
                     return this._xy = !this._xy;
                 }
             };
-            window.drawCircle = function(x,y,r) {
-                $game.add.graphics().beginFill(0xFF0000).drawCircle(x,y,r || 5);
-            };
-            //$game.selection = (function(){
-            //    return {
-            //        _selection: {},
-            //        start: function(type) {
-            //            if (type === void 0) type = null;
-            //            this.type = type;
-            //            this._selection = {};
-            //            return this;
-            //        },
-            //        set: function (name, object, data) {
-            //            if (arguments.length === 1) {
-            //                name = '_';
-            //                object = arguments[0];
-            //                data = {};
-            //            } else if (arguments.length === 2) {
-            //                name = '_';
-            //                object = arguments[0];
-            //                data = arguments[1];
-            //            }
-            //            data.object = object;
-            //            this._selection[name] = data;
-            //            return this;
-            //        }, get: function (name) {
-            //            if (arguments.length === 0) {
-            //                name = '_';
-            //            }
-            //            if (!this._selection.hasOwnProperty(name))
-            //                throw new Error ('cant get ['+name+'] from selection');
-            //            return this._selection[name];
-            //        }, map: function ($callback) {
-            //            for (var key in this._selection) {
-            //                $callback.call(this._selection[key]);
-            //            }
-            //            return this;
-            //        }, processUpdate: function() {
-            //            this.map(function(){
-            //                if (this.hasOwnProperty('update')) {
-            //                    this.update.call(this);
-            //                }
-            //            });
-            //            return this;
-            //        }, processRender: function() {
-            //            this.map(function(){
-            //                if (this.hasOwnProperty('render')) {
-            //                    this.update.call(this);
-            //                }
-            //            });
-            //            return this;
-            //        }
-            //    }
-            //})().start();
             var Railway = requireService.require('game.entities.Railway', {game: $game});
             $game.selectionMode = {
                 railway: {
@@ -103,10 +49,66 @@ angular.module('game').factory('gameService', function($window, UIService, requi
 
             $game.ui = UIService;
 
-            $game.state.add('mainState', $app.requireService.require('game.states.mainState', {game: $game}));
+            $game.state.add('mainState', $app.requireService.require('game.states.mainState', {
+                game: $game,
+                createCallback: createCallback
+            }));
             $game.state.start('mainState');
 
             return $game;
         }
     };
 });
+
+
+//$game.selection = (function(){
+//    return {
+//        _selection: {},
+//        start: function(type) {
+//            if (type === void 0) type = null;
+//            this.type = type;
+//            this._selection = {};
+//            return this;
+//        },
+//        set: function (name, object, data) {
+//            if (arguments.length === 1) {
+//                name = '_';
+//                object = arguments[0];
+//                data = {};
+//            } else if (arguments.length === 2) {
+//                name = '_';
+//                object = arguments[0];
+//                data = arguments[1];
+//            }
+//            data.object = object;
+//            this._selection[name] = data;
+//            return this;
+//        }, get: function (name) {
+//            if (arguments.length === 0) {
+//                name = '_';
+//            }
+//            if (!this._selection.hasOwnProperty(name))
+//                throw new Error ('cant get ['+name+'] from selection');
+//            return this._selection[name];
+//        }, map: function ($callback) {
+//            for (var key in this._selection) {
+//                $callback.call(this._selection[key]);
+//            }
+//            return this;
+//        }, processUpdate: function() {
+//            this.map(function(){
+//                if (this.hasOwnProperty('update')) {
+//                    this.update.call(this);
+//                }
+//            });
+//            return this;
+//        }, processRender: function() {
+//            this.map(function(){
+//                if (this.hasOwnProperty('render')) {
+//                    this.update.call(this);
+//                }
+//            });
+//            return this;
+//        }
+//    }
+//})().start();

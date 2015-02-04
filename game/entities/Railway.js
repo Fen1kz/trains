@@ -1,71 +1,119 @@
 angular.module('trains').run(function(requireService) {
     requireService.define('game.entities.Railway', function (data) {
         var game = data.game;
-
+        var line = {
+            width: game.c.CELL_SIZE / 5
+            ,color: {
+                good: 0x009900
+                ,bad: 0x990000
+            }
+            ,alpha: 0.5
+        };
+        var Path = function(gfx, firstCell) {
+            var cellsArray = [];
+            var $this = this;
+            this.init = function() {
+                this.gfx = gfx;
+                this.cells = {};
+                this.pointsArray = [];
+                this.add(firstCell);
+            };
+            this.get = function(i) {
+                return cellsArray[(i >= 0) ? i : this.length + i];
+            };
+            this.add = function(cell) {
+                this.cells[cell.X+':'+cell.Y] = true;
+                cellsArray.push(cell);
+                this.pointsArray.push(new Phaser.Point(cell.x, cell.y));
+                return this;
+            };
+            this.removeLast = function() {
+                this.cells[this.last.X + ':' + this.last.Y] = void 0;
+                cellsArray.pop();
+                this.pointsArray.pop();
+                return this;
+            };
+            Object.defineProperty(this, 'last', {
+                get: function() {return $this.get(-1);}
+            });
+            Object.defineProperty(this, 'length', {
+                get: function() {return cellsArray.length;}
+            });
+            this.exist = function(cell) {
+                return this.cells[cell.X+':'+cell.Y] !== void 0;
+            };
+            this.drawStart = function() {
+                this.gfx.beginFill(0x009900, 0.5);
+                this.gfx.drawCircle(this.get(0).x, this.get(0).y, game.c.CELL_SIZE / 2);
+                this.gfx.endFill();
+                return this;
+            };
+            this.redraw = function() {
+                this.gfx.clear();
+                this.drawStart();
+                this.gfx.lineStyle(line.width, line.color.good, line.alpha);
+                this.gfx.drawPolygon(this.pointsArray);
+                return this;
+            };
+            this.init();
+        };
         var Railway = function () {
-            this.cells = {};
-            this.path = [];
-            this.previousValidCell = null;
+            this.Path = Path;
+            this.path = null;
             this.startDraw = function(cell) {
                 var $this = this;
-                var line = {
-                    width: game.e.cells.SIZE / 5
-                    ,color: {
-                        good: 0x009900
-                        ,bad: 0x990000
-                    }
-                    ,alpha: 0.5
-                };
-                var gfx = game.add.graphics();
-                gfx.beginFill(0x009900, 0.5);
-                gfx.drawCircle(cell.x, cell.y, game.e.cells.SIZE / 2);
-                gfx.endFill();
-                gfx.moveTo(cell.x, cell.y);
-                gfx.lineStyle(line.width, line.color.good, line.alpha);
-
-                var previousValidCell = cell;
-                this.cells[cell.X+':'+cell.Y] = true;
-                this.path.push(cell);
-
+                var gfxGroup = game.add.group();
+                var gfx = game.add.graphics(0, 0, gfxGroup);
+                this.path = new this.Path(gfx, cell);
                 var moveIndex = game.input.addMoveCallback(function(pointer, x, y) {
                     var currentCell = game.e.cells.getByxy(x, y);
-                    var dir = previousValidCell.dirToCell(currentCell);
-                    if (previousValidCell.nearCell(currentCell)
-                        && dir !== 'n' && dir !== 's'
-                        && this.cells[currentCell.X+':'+currentCell.Y] === void 0
-                    ) {
-                        previousValidCell = currentCell;
-                        this.cells[currentCell.X+':'+currentCell.Y] = true;
-                        this.path.push(currentCell);
-
-                        gfx.lineStyle(line.width, line.color.good, line.alpha);
-                        gfx.lineTo(currentCell.x, currentCell.y);
+                    if (currentCell !== this.path.last) {
+                        var dir = this.path.last.dirToCell(currentCell);
+                        if (dir !== null && +dir !== game.RAILMAP.NORTH && +dir !== game.RAILMAP.SOUTH) {
+                            if (currentCell.sameCell(this.path.get(-2))) {
+                                this.path.removeLast(currentCell);
+                                this.path.redraw();
+                            } else if (!this.path.exist(currentCell)) {
+                                this.path.add(currentCell);
+                                this.path.redraw();
+                            }
+                        }
                     }
                 }, this);
                 game.input.onUp.addOnce(function(pointer) {
                     game.input.deleteMoveCallback(moveIndex);
+                    if (this.path.length < 2) {
+                        gfxGroup.destroy();
+                        return;
+                    }
                     game.ui.confirmOnce({
-                        x: previousValidCell.x
-                        ,y: previousValidCell.y
+                        x: this.path.last.x
+                        ,y: this.path.last.y
                         ,text: 'Build railway?'
-                    }, (function() {
-                        //gfx.destroy();
-                        var prevCell;
-                        var cell = this.path[0];
-                        cell.addRail('-');
+                    }, function() {
+                        var prevCell, cell, nextCell;
                         for (var i = 1; i < this.path.length; i++) {
-                            prevCell = this.path[i-1];
-                            cell = this.path[i];
-                            //console.log()cell.dirToCell(prevCell)
+                            prevCell = this.path.get(i - 1);
+                            cell = this.path.get(i);
+                            nextCell = this.path.get(i + 1);
+                            if (prevCell === void 0) {
+                                continue;
+                            }
+                            if (nextCell === void 0) {
+                                continue;
+                            }
+                            var frame = game.RAILMAP.frameByDirs(cell.dirToCell(prevCell), cell.dirToCell(nextCell));
+                            cell.addRail(frame);
+                            console.log(cell.dirToCell(prevCell), cell.dirToCell(nextCell), frame);
                         }
-                    }).bind(this), (function() {
-                        gfx.destroy();
-                    }).bind(this));
+                        gfxGroup.destroy();
+                    }.bind(this), function() {
+                        gfxGroup.destroy();
+                    }.bind(this));
                 }, this);
             };
             //game.mode.start(game.c.RAILWAY)
         };
-        var i = 0;
         return Railway;
     });
 });

@@ -1,5 +1,5 @@
 {
-    "curly": true,
+    "curly": false,
     "eqeqeq": true,
     "immed": true,
     "latedef": true,
@@ -14,6 +14,7 @@
     "laxcomma": true,
 
     "-W008": false, //A leading decimal point can be confused with a dot
+    "-W018": false, //Confusing use of '!'
 
     "globals": {
         "jQuery": true,

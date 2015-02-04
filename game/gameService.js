@@ -3,14 +3,14 @@ angular.module('game').factory('gameService', function($window, UIService, requi
         createGame: function($app, $data) {
             this.game = new Phaser.Game($data.width, $data.height, Phaser.CANVAS, 'canvas-wrapper');
             var $game = this.game;
-            var Railway = requireService.require('game.entities.Railway', {game: $game});
-
             // constants
             $game.c = {
-                mode: {
+                CELL_SIZE: 64
+                ,mode: {
                     RAILWAY: 'input.mode.railway'
                 }
             };
+            $game.RAILMAP = new (requireService.require('game.services.Railmap', {game: $game}))();
             // entities
             $game.e = {};
             // gamemanagement
@@ -78,6 +78,7 @@ angular.module('game').factory('gameService', function($window, UIService, requi
             //        }
             //    }
             //})().start();
+            var Railway = requireService.require('game.entities.Railway', {game: $game});
             $game.selectionMode = {
                 railway: {
                     start: function(cell, pointer) {
@@ -99,7 +100,7 @@ angular.module('game').factory('gameService', function($window, UIService, requi
 
             $game.ui = UIService;
 
-            $game.state.add('mainState', $app.requireService.require('game.states.mainState', {game: game}));
+            $game.state.add('mainState', $app.requireService.require('game.states.mainState', {game: $game}));
             $game.state.start('mainState');
 
             return $game;

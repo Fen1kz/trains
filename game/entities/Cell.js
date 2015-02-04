@@ -18,8 +18,8 @@ angular.module('trains').run(function(requireService) {
                 points.push(new PIXI.Point(
                     //size * 0.5 + size * Math.cos(angle),
                     //size * 0.5 + size * Math.sin(angle)
-                    Math.round($game.e.cells.SIZE * 0.5 * Math.cos(angle)),
-                    Math.round($game.e.cells.SIZE * 0.5 * Math.sin(angle))
+                    Math.round($game.c.CELL_SIZE * 0.5 * Math.cos(angle)),
+                    Math.round($game.c.CELL_SIZE * 0.5 * Math.sin(angle))
                 ));
             }
             var hexPolygon = new PIXI.Polygon(points);
@@ -36,9 +36,9 @@ angular.module('trains').run(function(requireService) {
             var hexMaskImage = $game.make.image(0, 0, hexMask.generateTexture(1,1));
 
             var adjustedHexMaskImageBounds = hexMaskImage.getBounds().clone();
-            adjustedHexMaskImageBounds.y = Math.ceil(($game.e.cells.SIZE - adjustedHexMaskImageBounds.height) * 0.5);
+            adjustedHexMaskImageBounds.y = Math.ceil(($game.c.CELL_SIZE - adjustedHexMaskImageBounds.height) * 0.5);
 
-            var hexTexture = $game.make.bitmapData($game.e.cells.SIZE, $game.e.cells.SIZE);
+            var hexTexture = $game.make.bitmapData($game.c.CELL_SIZE, $game.c.CELL_SIZE);
             hexTexture.alphaMask($game.cache.getImage('hex'), hexMaskImage, null, adjustedHexMaskImageBounds);
             //hexTexture.draw(hexMaskImage, 0, size * 0.07); // magic _/ since HexMaskImage is not 64x64
 
@@ -48,21 +48,6 @@ angular.module('trains').run(function(requireService) {
                 hexOverlay: hexOverlay.generateTexture()
             };
         }());
-
-        var Railmap = {
-            'nw-se': 0,
-            'ne-sw': 1,
-            '-': 2,
-            'nw':4,
-            'ne':5,
-            'se':6,
-            'sw':7,
-            'nw-ne': 8,
-            'ne-se': 9,
-            'se-sw': 10,
-            'sw-nw': 11
-        };
-
         var Cell = function (cells, X, Y) {
             var $this = this;
 
@@ -71,14 +56,14 @@ angular.module('trains').run(function(requireService) {
             this.X = X;
             this.Y = Y;
 
-            this.x =  (X * cells.SIZE * 0.25 * 3);
+            this.x =  (X * this.game.c.CELL_SIZE * 0.25 * 3);
             this.y =  Y * cells.hexAltDistance * 2  + (X % 2) * cells.hexAltDistance;
 
             //this.background = game.make.sprite(x + X*50, y + Y*50, CellData.hexTexture, true);
             //this.overlay = game.make.sprite(x + X*50, y + Y*50, CellData.hexOverlay, true);
-            this.background = $game.make.sprite(this.x, this.y, CellData.hexTexture, true);
+            this.background = this.game.make.sprite(this.x, this.y, CellData.hexTexture, true);
             cells.groupBackground.add(this.background);
-            this.overlay = $game.make.sprite(this.x, this.y, CellData.hexOverlay, true);
+            this.overlay = this.game.make.sprite(this.x, this.y, CellData.hexOverlay, true);
             cells.groupOverlay.add(this.overlay);
 
             this.background.anchor.set(0.5);
@@ -105,69 +90,49 @@ angular.module('trains').run(function(requireService) {
             this.overlay.events.onInputOver.add(mouseOver, this);
             this.overlay.events.onInputOut.add(mouseOut, this);
             this.overlay.events.onInputDown.add(mouseDown, this);
-            $game.input.onUp.add(mouseOut, this);
-            $game.onBlur.add(mouseOut, this);
+            this.game.input.onUp.add(mouseOut, this);
+            this.game.onBlur.add(mouseOut, this);
         };
-
-        Cell.prototype.addRail = function (frame) {
-            if (this.rail !== undefined) {
-                this.rail.destroy();
+        Cell.prototype.get = function (dir) {
+            if (arguments.length === 2) {
+                return this.cells.cell(this.X + arguments[0], this.Y + arguments[1]);
             }
-            if (typeof frame === 'string') frame = Railmap[frame];
-            if (frame === void 0) frame = Railmap['-'];
-            this.rail = $game.add.sprite(this.x, this.y, 'rails', frame);
-            this.rail.anchor.set(0.5);
+            switch(arguments[0]) {
+                case this.game.RAILMAP.NORTH_WEST :
+                case this.game.RAILMAP.NORTH_WEST.toString() :
+                    return this.get(-1, (this.X % 2) ? 0 : -1);
+                case this.game.RAILMAP.NORTH      :
+                case this.game.RAILMAP.NORTH.toString()      :
+                    return this.get(0, -1);
+                case this.game.RAILMAP.NORTH_EAST :
+                case this.game.RAILMAP.NORTH_EAST.toString() :
+                    return this.get(+1, (this.X % 2) ? 0 : -1);
+                case this.game.RAILMAP.SOUTH_EAST :
+                case this.game.RAILMAP.SOUTH_EAST.toString() :
+                    return this.get(+1, (this.X % 2) ? +1 : 0);
+                case this.game.RAILMAP.SOUTH      :
+                case this.game.RAILMAP.SOUTH.toString()      :
+                    return this.get(0, +1);
+                case this.game.RAILMAP.SOUTH_WEST :
+                case this.game.RAILMAP.SOUTH_WEST.toString() :
+                    return this.get(-1, (this.X % 2) ? +1 : 0);
+                default:
+                    return null;
+            }
         };
-        Cell.prototype.get = function (x, y) {
-            return this.cells.cell(this.X + x, this.Y + y);
-        };
-        Cell.prototype.getNW = function () {
-            return this.get(-1, (this.X % 2) ? 0 : -1);
-        };
-        Cell.prototype.getN = function () {
-            return this.get(0, -1);
-        };
-        Cell.prototype.getNE = function () {
-            return this.get(+1, (this.X % 2) ? 0 : -1);
-        };
-        Cell.prototype.getSE = function () {
-            return this.get(+1, (this.X % 2) ? +1 : 0);
-        };
-        Cell.prototype.getS = function () {
-            return this.get(0, +1);
-        };
-        Cell.prototype.getSW = function () {
-            return this.get(-1, (this.X % 2) ? +1 : 0);
-        };
-
-        Cell.prototype.getNearAll = function () {
-            return {
-                'nw': this.getNW(),
-                'n' : this.getN(),
-                'ne': this.getNE(),
-                'se': this.getSE(),
-                's' : this.getS(),
-                'sw': this.getSW()
-            };
-        };
-        Cell.prototype.getNear = function () {
+        Cell.prototype.getNear = function (all) {
             var r = {};
-            this.getNW() ? r['nw'] = this.getNW() : null;
-            this.getN()  ? r['n' ] = this.getN()  : null;
-            this.getNE() ? r['ne'] = this.getNE() : null;
-            this.getSE() ? r['se'] = this.getSE() : null;
-            this.getS()  ? r['s' ] = this.getS()  : null;
-            this.getSW() ? r['sw'] = this.getSW() : null;
+            for (var dir in this.game.RAILMAP.ALL) {
+                var cell = this.get(dir);
+                if (cell || all) r[dir] = cell;
+            }
             return r;
         };
-        Cell.prototype.getNearArray = function () {
+        Cell.prototype.getNearArray = function (all) {
             var r = [];
-            this.getNW() ? r.push(this.getNW()) : null;
-            this.getN()  ? r.push(this.getN() ) : null;
-            this.getNE() ? r.push(this.getNE()) : null;
-            this.getSE() ? r.push(this.getSE()) : null;
-            this.getS()  ? r.push(this.getS() ) : null;
-            this.getSW() ? r.push(this.getSW()) : null;
+            for (var dir in this.game.RAILMAP.ALL) {
+                if (this.get(dir) || all) r.push(this.get(dir));
+            }
             return r;
         };
         Cell.prototype.dX = function (cell) {
@@ -177,10 +142,10 @@ angular.module('trains').run(function(requireService) {
             return this.Y - cell.Y;
         };
         Cell.prototype.sameCell = function (cell) {
-            return this.X === cell.X && this.Y === cell.Y;
+            return (cell instanceof Cell) && this.X === cell.X && this.Y === cell.Y;
         };
         Cell.prototype.nearCell = function (cell) {
-            return this.getNearArray().indexOf(cell) >= 0;
+            return (cell instanceof Cell) && this.getNearArray().indexOf(cell) >= 0;
         };
         Cell.prototype.dirToCell = function (cell) {
             var near = this.getNear();
@@ -190,6 +155,18 @@ angular.module('trains').run(function(requireService) {
                 }
             }
             return null;
+        };
+        Cell.prototype.XY = function () {
+            return {X: this.X, Y: this.Y};
+        };
+
+        Cell.prototype.addRail = function (frame) {
+            if (this.rail !== undefined) {
+                this.rail.destroy();
+            }
+            frame = this.game.RAILMAP.frame(frame);
+            this.rail = this.game.add.sprite(this.x, this.y, 'rails', frame);
+            this.rail.anchor.set(0.5);
         };
         Cell.prototype.mark = function () {
             //game.debug.renderSpriteBounds(spriteObjectToHighlight);

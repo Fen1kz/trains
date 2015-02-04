@@ -8,7 +8,6 @@ angular.module('trains').run(function($window, requireService) {
             var size = 64;
             var hexAltDistance = (Math.cos(Math.PI / 6) * size * 0.5);
             return {
-                SIZE: size,
                 hexAltDistance: hexAltDistance,
                 _cells: [],
                 _cellsXY: [],
@@ -34,7 +33,7 @@ angular.module('trains').run(function($window, requireService) {
                 },
                 getByxy: function (x, y) {
                     //console.log('----- starting byxy -----')
-                    var rawX = 1 + (x - this.SIZE * .25) / (this.SIZE * .75);
+                    var rawX = 1 + (x - game.c.CELL_SIZE * .25) / (game.c.CELL_SIZE * .75);
                     var X = Math.floor(rawX);
                     var rawY = (X % 2 ? y : y + hexAltDistance) / (hexAltDistance * 2);
                     var Y = Math.floor(rawY);
@@ -64,7 +63,7 @@ angular.module('trains').run(function($window, requireService) {
                         }
                     }
 
-                    return this._cellsXY[X][Y];
+                    return this.cell(X, Y);
                     //return {X: X, Y: )};
                 }
             };
@@ -100,11 +99,10 @@ angular.module('trains').run(function($window, requireService) {
                 //var gfx = game.add.graphics();
                 //gfx.lineStyle(3, 0x009900)
                 //
-                //this.SIZE = game.e.cells.SIZE;
-                //var yd = (Math.cos(Math.PI/6) * this.SIZE * 0.5);
+                //var yd = (Math.cos(Math.PI/6) * game.c.CELL_SIZE * 0.5);
                 //
                 //for(var i = 10; i >= 0; --i) {
-                //    var x = - this.SIZE * .5 + i * this.SIZE * 0.75;
+                //    var x = - game.c.CELL_SIZE * .5 + i * game.c.CELL_SIZE * 0.75;
                 //    gfx.moveTo(x, 0);
                 //    gfx.lineTo(x, 600);
                 //    for(var j = 10; j >= 0; --j) {
@@ -145,7 +143,7 @@ angular.module('trains').run(function($window, requireService) {
 
                 if ($window.gm._xy) {
                     game.e.cells._cells.forEach(function(cell) {
-                        game.debug.text((cell.X + ':' + cell.Y).toString(), cell.x - game.e.cells.SIZE *.3, cell.y, '#000');
+                        game.debug.text((cell.X + ':' + cell.Y).toString(), cell.x - game.c.CELL_SIZE *.3, cell.y, '#000');
                     });
                 }
             }

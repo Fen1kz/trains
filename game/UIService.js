@@ -12,13 +12,13 @@ angular.module('game').factory('UIService', function() {
 
             this.modalOpen.add(function(popover, data) {
                 var ts = Date.now();
-                $canvas.on('click.ui', cancelStatic);
-                $canvas.on('touchend.ui', cancelStatic);
                 function cancelStatic() {
                     if (Date.now() - ts > 100) {
                         popover.$tip.find('.cancel').trigger('click');
                     }
                 }
+                $canvas.on('click.ui', cancelStatic);
+                $canvas.on('touchend.ui', cancelStatic);
                 game.paused = true;
             });
             this.modalClose.add(function(popover, data){
@@ -48,8 +48,8 @@ angular.module('game').factory('UIService', function() {
                 ,viewport: '#canvas-wrapper'
                 ,html: true
                 ,title: data.text
-                ,content: '<button class="confirm btn btn-success"><i class="fa fa-check"></i></button>'
-                    + '<button class="cancel btn btn-danger pull-right"><i class="fa fa-times"></i></button>'
+                ,content: '<button class="confirm btn btn-success"><i class="fa fa-check"></i></button>' +
+                          '<button class="cancel btn btn-danger pull-right"><i class="fa fa-times"></i></button>'
                 };
             $UI.popover(popoverData).popover('show');
             var popover = $UI.data('bs.popover');

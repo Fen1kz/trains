@@ -9,7 +9,8 @@ angular.module('game').config(function ($stateProvider) {
         });
 })
 .constant('GAME', {
-    WIDTH: 1600, HEIGHT: 1600
+    WIDTH: 1600, HEIGHT: 1600,
+    CELL_SIZE: 64
 })
 .controller('gameWrapperController', function($scope, $injector, GAME, requireService, gameService) {
     $scope.game = gameService.createGame({
@@ -29,7 +30,7 @@ angular.module('game').config(function ($stateProvider) {
     function resizeGame () {
         var size = {
             width: $('#canvas-wrapper').width(),
-            height: $(window).height() - 100
+            height: $(window).height() - $('#game-header').height() - $('#game-footer').height()
         };
         size.width = size.width > GAME.WIDTH ? GAME.WIDTH : size.width;
         size.height = size.height > GAME.WIDTH ? GAME.WIDTH : size.height;

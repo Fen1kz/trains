@@ -1,17 +1,17 @@
-<div class="row">here's da gaem</div>
-<div class="row"><div id="canvas-wrapper">
+<div id="game-header" class="row">here's da gaem</div>
+<div id="game-body" class="row"><div id="canvas-wrapper">
     <div id="ui"></div>
 </div></div>
-<div class="row" ng-controller="UIController">
+<div id="game-footer" class="row" ng-controller="UIController">
     <div class="btn-group btn-group-lg col-xs-offset-2 margin-top-05" role="group">
         <button ng-repeat="button in buttons"
             type="button"
             class="btn btn-default"
             ng-model="controllerModel.instrument"
-            btn-radio="button.model">
+            btn-radio="button.model"
+            hotkey="{{button.hotkey}}"
+            >
             {{button.name}}
         </button>
     </div>
 </div>
-
-data-toggle="button"

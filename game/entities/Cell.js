@@ -48,6 +48,7 @@ angular.module('trains').run(function(requireService) {
                 hexOverlay: hexOverlay.generateTexture()
             };
         }());
+
         var Cell = function (cells, X, Y) {
             var $this = this;
 
@@ -87,12 +88,26 @@ angular.module('trains').run(function(requireService) {
             //this.overlay.events.onInputDown.add(function(sprite, pointer){
             //    console.log(this.getNear());
             //}, this);
-            this.overlay.events.onInputOver.add(mouseOver, this);
+            this.overlay.events.onInputOver.add(function(sprite, pointer) {
+                this.overlay.alpha = ALPHA_MAX;
+                this.overlay.scale.set(HEX_SCALE_MAX);
+                this.game.events.onCellOver.dispatch(this, pointer);
+            }, this);
+
+            this.overlay.events.onInputDown.add(function(sprite, pointer) {
+                this.game.events.onCellDown.dispatch(this, pointer);
+            }, this);
+
             this.overlay.events.onInputOut.add(mouseOut, this);
-            //this.overlay.events.onInputDown.add(mouseDown, this);
-            this.game.input.onUp.add(mouseOut, this);
+            //this.game.input.onUp.add(mouseOut, this);
             this.game.onBlur.add(mouseOut, this);
         };
+
+        function mouseOut (sprite, pointer) {
+            this.overlay.alpha = ALPHA_MIN;
+            this.overlay.scale.set(HEX_SCALE_MIN);
+        }
+
         Cell.prototype.get = function (dir) {
             if (arguments.length === 2) {
                 return this.cells.cell(this.X + arguments[0], this.Y + arguments[1]);
@@ -171,24 +186,6 @@ angular.module('trains').run(function(requireService) {
         Cell.prototype.mark = function () {
             //game.debug.renderSpriteBounds(spriteObjectToHighlight);
         };
-
-        function mouseDown (sprite, pointer) {
-            //console.log('mouseDown', sprite, pointer, this);
-            //this.background.tint = Math.round(Math.random() * (0xFFFFFF));
-            //this.addRail(Math.floor(Math.random()*16));
-
-            this.game.events.onCellMouseDown.dispatch(this, pointer);
-        }
-
-        function mouseOver (sprite, pointer) {
-            this.overlay.alpha = ALPHA_MAX;
-            this.overlay.scale.set(HEX_SCALE_MAX);
-        }
-
-        function mouseOut (sprite, pointer) {
-            this.overlay.alpha = ALPHA_MIN;
-            this.overlay.scale.set(HEX_SCALE_MIN);
-        }
 
         return Cell;
     });

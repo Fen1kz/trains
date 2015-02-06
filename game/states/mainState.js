@@ -1,5 +1,5 @@
 angular.module('trains').run(function ($window, requireService) {
-    requireService.define(['game.entities.Cell'], 'game.states.mainState', function (data) {
+    requireService.define(['game.controller', 'game.entities.Cell'], 'game.states.mainState', function (data) {
         var $game = data.game;
         var createCallback = data.createCallback;
 
@@ -84,42 +84,20 @@ angular.module('trains').run(function ($window, requireService) {
                 console.log('create ps');
                 this.game.stage.backgroundColor = 0xffffff;
                 this.game.ui.init(this.game);
-                createEvents.call(this);
+
+                this.game.events = {
+                    onCellDown: new Phaser.Signal(),
+                    onCellOver: new Phaser.Signal()
+                };
 
                 this.game.world.setBounds(0, 0, this.game.c.WORLD_WIDTH, this.game.c.WORLD_HEIGHT);
                 this.game.camera.x = this.game.world._width / 2;
                 this.game.camera.y = this.game.world._height / 2;
-                this.game.input.onDown.add(function (pointer) {
-                    var start = Phaser.Point.parse(pointer, 'worldX', 'worldY');
-                    var move = this.game.input.addMoveCallback(function (pointer, x, y) {
-                        this.game.camera.x = start.x - x;
-                        this.game.camera.y = start.y - y;
-                    });
-                    this.game.input.onUp.addOnce(function (pointer) {
-                        //console.log('onup');
-                        this.game.input.deleteMoveCallback(move);
-                    });
-                });
                 createCallback.call(this);
 
-                var Railway = requireService.require('game.entities.Railway');
-                //this.game.controllerMode = new function ControllerMode() {
-                //    var currentMode;
-                //    this.railway = new function RailMode() {
-                //        this.
-                //            start: function(cell, pointer) {
-                //                //$this.game.selection.start('railway')
-                //                //    .set(new Railway())
-                //                new Railway().startDraw(cell);
-                //                //$this.game.input.onUp.addOnce(function(pointer){
-                //                //});
-                //            }
-                //        }
-                //    };
-                //};
+                this.game.controller = requireService.require('game.controller');
 
                 var Cell = requireService.require('game.entities.Cell');
-
                 this.game.e.cells.groupBackground = this.game.add.group();
                 this.game.e.cells.groupOverlay = this.game.add.group();
                 for (var X = 0; X <= cellsX; ++X) {
@@ -154,16 +132,4 @@ angular.module('trains').run(function ($window, requireService) {
             }
         };
     });
-
-    function createEvents() {
-        this.game.events = {};
-        this.game.events.onCellMouseDown = new Phaser.Signal();
-        this.game.events.onCellMouseOver = new Phaser.Signal();
-
-        this.game.events.onCellMouseDown.add(handleCellMouseDown, this);
-    }
-
-    function handleCellMouseDown(cell, pointer) {
-        this.game.selectionMode.railway.start(cell, pointer);
-    }
 });

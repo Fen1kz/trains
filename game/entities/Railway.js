@@ -1,8 +1,8 @@
 angular.module('trains').run(function(requireService) {
     requireService.define('game.entities.Railway', function (data) {
-        var game = data.game;
+        var $game = data.game;
         var line = {
-            width: game.c.CELL_SIZE / 5
+            width: $game.c.CELL_SIZE / 5
             ,color: {
                 good: 0x009900
                 ,bad: 0x990000
@@ -44,7 +44,7 @@ angular.module('trains').run(function(requireService) {
             };
             this.drawStart = function() {
                 this.gfx.beginFill(0x009900, 0.5);
-                this.gfx.drawCircle(this.get(0).x, this.get(0).y, game.c.CELL_SIZE / 2);
+                this.gfx.drawCircle(this.get(0).x, this.get(0).y, $game.c.CELL_SIZE / 2);
                 this.gfx.endFill();
                 return this;
             };
@@ -60,59 +60,64 @@ angular.module('trains').run(function(requireService) {
         var Railway = function () {
             this.Path = Path;
             this.path = null;
-            this.startDraw = function(cell) {
-                var $this = this;
-                var gfxGroup = game.add.group();
-                var gfx = game.add.graphics(0, 0, gfxGroup);
-                this.path = new this.Path(gfx, cell);
-                var moveIndex = game.input.addMoveCallback(function(pointer, x, y) {
-                    var currentCell = game.e.cells.getByxy(x, y);
-                    if (currentCell !== this.path.last) {
-                        var dir = this.path.last.dirToCell(currentCell);
-                        if (dir !== null && +dir !== game.RAILMAP.NORTH && +dir !== game.RAILMAP.SOUTH) {
-                            if (currentCell.sameCell(this.path.get(-2))) {
-                                this.path.removeLast(currentCell);
-                                this.path.redraw();
-                            } else if (!this.path.exist(currentCell)) {
-                                this.path.add(currentCell);
-                                this.path.redraw();
-                            }
-                        }
-                    }
-                }, this);
-                game.input.onUp.addOnce(function(pointer) {
-                    game.input.deleteMoveCallback(moveIndex);
-                    if (this.path.length < 2) {
-                        gfxGroup.destroy();
-                        return;
-                    }
-                    game.ui.confirmOnce({
-                        x: this.path.last.x
-                        ,y: this.path.last.y
-                        ,text: 'Build railway?'
-                    }, function() {
-                        var prevCell, cell, nextCell;
-                        for (var i = 1; i < this.path.length; i++) {
-                            prevCell = this.path.get(i - 1);
-                            cell = this.path.get(i);
-                            nextCell = this.path.get(i + 1);
-                            if (prevCell === void 0) {
-                                continue;
-                            }
-                            if (nextCell === void 0) {
-                                continue;
-                            }
-                            var frame = game.RAILMAP.frameByDirs(cell.dirToCell(prevCell), cell.dirToCell(nextCell));
-                            cell.addRail(frame);
-                            //console.log(cell.dirToCell(prevCell), cell.dirToCell(nextCell), frame);
-                        }
-                        gfxGroup.destroy();
-                    }.bind(this), function() {
-                        gfxGroup.destroy();
-                    }.bind(this));
-                }, this);
+
+            this.onDown = function(cell) {
+                this.gfxGroup = $game.add.group();
+                this.gfx = $game.add.graphics(0, 0,  this.gfxGroup);
+                this.path = new this.Path(this.gfx, cell);
             };
-            //game.mode.start(game.c.RAILWAY)
+
+            this.onMove = function(pointer) {
+                var currentCell = $game.e.cells.getByxy(pointer.worldX, pointer.worldY);
+                if (currentCell !== this.path.last) {
+                    var dir = this.path.last.dirToCell(currentCell);
+                    if (dir !== null && +dir !== $game.RAILMAP.NORTH && +dir !== $game.RAILMAP.SOUTH) {
+                        if (currentCell.sameCell(this.path.get(-2))) {
+                            this.path.removeLast(currentCell);
+                            this.path.redraw();
+                        } else if (!this.path.exist(currentCell)) {
+                            this.path.add(currentCell);
+                            this.path.redraw();
+                        }
+                    }
+                }
+            };
+
+            this.onUp = function() {
+                if (this.path.length < 2) {
+                    this.destroy();
+                    return;
+                }
+                $game.ui.confirmOnce({
+                    x: this.path.last.x
+                    ,y: this.path.last.y
+                    ,text: 'Build railway?'
+                }, function() {
+                    var prevCell, cell, nextCell;
+                    for (var i = 1; i < this.path.length; i++) {
+                        prevCell = this.path.get(i - 1);
+                        cell = this.path.get(i);
+                        nextCell = this.path.get(i + 1);
+                        if (prevCell === void 0) {
+                            continue;
+                        }
+                        if (nextCell === void 0) {
+                            continue;
+                        }
+                        var frame = $game.RAILMAP.frameByDirs(cell.dirToCell(prevCell), cell.dirToCell(nextCell));
+                        cell.addRail(frame);
+                        //console.log(cell.dirToCell(prevCell), cell.dirToCell(nextCell), frame);
+                    }
+                    this.destroy();
+                }.bind(this), function() {
+                    this.destroy();
+                }.bind(this));
+            };
+
+            this.destroy = function() {
+                this.gfxGroup.destroy();
+                //$game.ui @TODO DESTROY
+            }
         };
         return Railway;
     });

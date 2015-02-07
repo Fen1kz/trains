@@ -1,4 +1,11 @@
-var app = angular.module('trains', ['ui.bootstrap', 'ui.utils', 'ui.router', 'ngAnimate', 'game', 'home']);
+var app = angular.module('trains', [
+    'ui.bootstrap'
+    ,'ui.utils'
+    ,'ui.router'
+    ,'ngAnimate'
+    ,'game'
+    ,'home'
+]);
 
 angular.module('trains').config(function($stateProvider, $urlRouterProvider) {
     /* Add New States Above */

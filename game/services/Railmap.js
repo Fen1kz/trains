@@ -1,4 +1,4 @@
-angular.module('trains').run(function(requireService) {
+angular.module('game').run(function(requireService) {
     requireService.define('game.services.Railmap', function (data) {
         var $game = data.game;
         return function() {

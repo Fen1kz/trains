@@ -1,4 +1,4 @@
-angular.module('trains').run(function(requireService) {
+angular.module('game').run(function(requireService) {
     requireService.define('game.entities.Cell', function (data) {
         var $game = data.game,
             state = data.state;
@@ -98,15 +98,15 @@ angular.module('trains').run(function(requireService) {
                 this.game.events.onCellDown.dispatch(this, pointer);
             }, this);
 
-            this.overlay.events.onInputOut.add(mouseOut, this);
+            this.overlay.events.onInputOut.add(this.mouseOut, this);
             //this.game.input.onUp.add(mouseOut, this);
-            this.game.onBlur.add(mouseOut, this);
+            this.game.onBlur.add(this.mouseOut, this);
         };
 
-        function mouseOut (sprite, pointer) {
+        Cell.prototype.mouseOut = function (sprite, pointer) {
             this.overlay.alpha = ALPHA_MIN;
             this.overlay.scale.set(HEX_SCALE_MIN);
-        }
+        };
 
         Cell.prototype.get = function (dir) {
             if (arguments.length === 2) {

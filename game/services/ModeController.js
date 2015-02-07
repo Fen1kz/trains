@@ -1,8 +1,8 @@
 ;'use strict';
-angular.module('trains').run(function(requireService, $rootScope) {
+angular.module('game').run(function(requireService, $rootScope) {
     requireService.define('game.controller', function (data) {
         var $game = data.game;
-        var debug = true;
+        var debug = !true; // quicker than rewrite true/false every time
         var controller = new function ModeController() {
             var self = this;
             var modes = {};
@@ -122,8 +122,6 @@ angular.module('trains').run(function(requireService, $rootScope) {
                 railway.destroy();
             }
         });
-
-        controller.start('mode.camera.pan');
         return controller;
     });
 });

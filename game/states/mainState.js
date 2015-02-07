@@ -1,7 +1,6 @@
-angular.module('trains').run(function ($window, requireService) {
+angular.module('game').run(function ($window, GAME, requireService) {
     requireService.define(['game.controller', 'game.entities.Cell'], 'game.states.mainState', function (data) {
         var $game = data.game;
-        var createCallback = data.createCallback;
 
         var hexAltDistance = (Math.cos(Math.PI / 6) * $game.c.CELL_SIZE * 0.5);
 
@@ -82,21 +81,7 @@ angular.module('trains').run(function ($window, requireService) {
             },
             create: function () {
                 console.log('create ps');
-                this.game.stage.backgroundColor = 0xffffff;
-                this.game.ui.init(this.game);
-
-                this.game.events = {
-                    onCellDown: new Phaser.Signal(),
-                    onCellOver: new Phaser.Signal()
-                };
-
-                this.game.world.setBounds(0, 0, this.game.c.WORLD_WIDTH, this.game.c.WORLD_HEIGHT);
-                this.game.camera.x = this.game.world._width / 2;
-                this.game.camera.y = this.game.world._height / 2;
-                createCallback.call(this);
-
-                this.game.controller = requireService.require('game.controller');
-
+                var $game = this.game;
                 var Cell = requireService.require('game.entities.Cell');
                 this.game.e.cells.groupBackground = this.game.add.group();
                 this.game.e.cells.groupOverlay = this.game.add.group();
@@ -106,14 +91,16 @@ angular.module('trains').run(function ($window, requireService) {
                     }
                 }
 
-                quickdebug = this.game.add.group();
-                this.game.e.cells._cells.forEach(function (cell) {
-                    this.game.add.text(cell.x - this.game.c.CELL_SIZE * .3, cell.y
+                quickdebug = $game.add.group();
+                $game.e.cells._cells.forEach(function (cell) {
+                    $game.add.text(cell.x - GAME.CELL_SIZE * .3, cell.y
                         , (cell.X + ':' + cell.Y).toString()
                         , {font: 'normal 10px Arial'}
                         , quickdebug
                     );
                 });
+
+                $game.controller.start('mode.camera.pan');
             },
             update: function () {
                 //console.log('update');

@@ -1,53 +1,39 @@
-angular.module('game').factory('gameService', function($window, UIService, requireService) {
+angular.module('game')
+.constant('GAME', {
+    CONTAINER_ID: '#gameCanvas',
+    WIDTH: 1600, HEIGHT: 1600,
+    CELL_SIZE: 64
+})
+.directive('gameCanvas', function($window, $rootScope, $injector, GAME, requireService) {
     return {
-        createGame: function($app, $data, createCallback) {
-            var $game = new Phaser.Game($data.width, $data.height, Phaser.CANVAS, 'canvas-wrapper');
-            this.game = $game;
+        restrict: 'E',
+        //scope: {
+        //    players: '=',
+        //    mapId: '='
+        //},
+        template: '<div id="' + GAME.CONTAINER_ID.slice(1) + '"><div id="ui"></div></div>',
+        link: function($scope, $e, attrs) {
+            var $game = new Phaser.Game(GAME.WIDTH, GAME.HEIGHT, Phaser.CANVAS, 'gameCanvas');
             requireService.setData({game: $game});
-            // constants
-            $game.c = {
-                WORLD_WIDTH: $data.width
-                ,WORLD_HEIGHT: $data.height
-                ,CELL_SIZE: 64
-                ,mode: {
-                    RAILWAY: 'input.mode.railway'
-                }
-            };
-            $game.RAILMAP = new (requireService.require('game.services.Railmap', {game: $game}))();
-            // entities
-            $game.e = {};
-            // gamemanagement
-            $game.gm = {
-                _xy: false
-                ,get xy () {
-                    return this._xy = !this._xy;
-                }
-                ,_mark: false
-                ,get mark () {
-                    return this._xy = !this._xy;
-                }
-            };
 
-            $app.$scope.$on('$destroy', function() {
-                $game.destroy(); // Clean up the this.gamewhen we leave this scope
-            });
+            requireService.require('game.services.GameOjects');
 
-            $window.game = $game;
-            $window.gm = $game.gm;
+            //$scope.$on('$destroy', function() {
+            //    $game.destroy(); // Clean up the this.gamewhen we leave this scope
+            //});
 
-            $game.ui = UIService;
+            //$scope.$on(
+            //    $game.input.onUp
+            //);
 
-            $game.state.add('mainState', $app.requireService.require('game.states.mainState', {
-                game: $game,
-                createCallback: createCallback
-            }));
-            $game.state.start('mainState');
 
-            return $game;
+            $game.state.add('bootState', requireService.require('game.states.bootState'));
+            $game.state.add('mainState', requireService.require('game.states.mainState'));
+
+            $game.state.start('bootState');
         }
-    };
+    }
 });
-
 
 //$game.selection = (function(){
 //    return {

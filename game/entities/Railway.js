@@ -1,4 +1,4 @@
-angular.module('trains').run(function(requireService) {
+angular.module('game').run(function(requireService) {
     requireService.define('game.entities.Railway', function (data) {
         var $game = data.game;
         var line = {
@@ -68,15 +68,15 @@ angular.module('trains').run(function(requireService) {
             };
 
             this.onMove = function(pointer) {
-                var currentCell = $game.e.cells.getByxy(pointer.worldX, pointer.worldY);
-                if (currentCell !== this.path.last) {
-                    var dir = this.path.last.dirToCell(currentCell);
+                this.currentCell = $game.e.cells.getByxy(pointer.worldX, pointer.worldY);
+                if (this.currentCell !== this.path.last) {
+                    var dir = this.path.last.dirToCell(this.currentCell);
                     if (dir !== null && +dir !== $game.RAILMAP.NORTH && +dir !== $game.RAILMAP.SOUTH) {
-                        if (currentCell.sameCell(this.path.get(-2))) {
-                            this.path.removeLast(currentCell);
+                        if (this.currentCell.sameCell(this.path.get(-2))) {
+                            this.path.removeLast(this.currentCell);
                             this.path.redraw();
-                        } else if (!this.path.exist(currentCell)) {
-                            this.path.add(currentCell);
+                        } else if (!this.path.exist(this.currentCell)) {
+                            this.path.add(this.currentCell);
                             this.path.redraw();
                         }
                     }
@@ -88,9 +88,11 @@ angular.module('trains').run(function(requireService) {
                     this.destroy();
                     return;
                 }
-                $game.ui.confirmOnce({
-                    x: this.path.last.x
-                    ,y: this.path.last.y
+                this.currentCell.mouseOut();
+                var point = $game.world.toGlobal(Phaser.Point.parse(this.path.last));
+                $game.ui.confirm('railway', {
+                    x: point.x
+                    ,y: point.y
                     ,text: 'Build railway?'
                 }, function() {
                     var prevCell, cell, nextCell;
@@ -115,8 +117,8 @@ angular.module('trains').run(function(requireService) {
             };
 
             this.destroy = function() {
-                this.gfxGroup.destroy();
-                //$game.ui @TODO DESTROY
+                if (this.gfxGroup) this.gfxGroup.destroy();
+                $game.ui.destroy('railway');
             }
         };
         return Railway;

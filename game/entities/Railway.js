@@ -96,14 +96,19 @@ angular.module('game').run(function(requireService) {
                     ,text: 'Build railway?'
                 }, function() {
                     var prevCell, cell, nextCell;
-                    for (var i = 1; i < this.path.length; i++) {
+                    for (var i = 0; i < this.path.length; i++) {
                         prevCell = this.path.get(i - 1);
                         cell = this.path.get(i);
                         nextCell = this.path.get(i + 1);
+                        console.log(prevCell);
+                        console.log(cell);
+                        console.log(nextCell);
                         if (prevCell === void 0) {
+                            cell.addRail();
                             continue;
                         }
                         if (nextCell === void 0) {
+                            cell.addRail();
                             continue;
                         }
                         var frame = $game.RAILMAP.frameByDirs(cell.dirToCell(prevCell), cell.dirToCell(nextCell));

@@ -73,7 +73,6 @@ angular.module('game').run(function(requireService, $rootScope) {
         controller.load('mode.camera.pan', function PanMode(game, data) {
             ModeDMU.apply(this, arguments);
             var self = this;
-            var debug = true;
 
             self.onDown = self.game.input.onDown.add(function (pointer) {
                 if (debug) console.log('mode.camera.pan::onDown');
@@ -99,7 +98,6 @@ angular.module('game').run(function(requireService, $rootScope) {
         controller.load('mode.draw.railway', function RailwayDrawMode(game, data) {
             ModeDMU.apply(this, arguments);
             var self = this;
-            var debug = true;
 
             var railway = new Railway();
             self.onDown = self.game.events.onCellDown.add(function(cell, pointer){
